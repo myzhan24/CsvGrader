@@ -18,12 +18,19 @@ public class CsvGrader {
         //	mycg.generateGradeDistCutTime("answers.csv","answers.properties","questionLocations.txt","Event1Data",60);
         mycg.trajectories = new HashMap<String, ArrayList<Trajectory>>();
         mycg.readTrajectories("trajectory_points.csv");
-        mycg.generateTrajectoryDistances("Event1Data60.csv", "questionLocations.txt", "funfun", 60);
+        mycg.generateTrajectoryDistances("Event1Data60.csv", "questionLocations.txt", "CurrentLocDistances", 60);
         //mycg.generateTrajectorySpeeds("Event1Data60.csv", "trajspeeds");
 
     }
 
 
+    /**
+     * readTrajectories
+     * loads the global trajectories hash map of the trajectory data in a given input file
+     * the hash map contains ArrayLists of trajectory objects, each ArrayList represents trajectories for each unique device ID
+     *
+     * @param trajFileName
+     */
     public void readTrajectories(String trajFileName) {
         Scanner csv = null;
         try {
@@ -53,6 +60,16 @@ public class CsvGrader {
         }
     }
 
+    /**
+     * generateTrajectoryDistances
+     * creates a .csv file that contains distances from question locations based on current location from the answer list and using the first trajectory data point as the starting point
+     * uses the answer list created by .csv maker, namely needs an answer column
+     *
+     * @param csvName                   name of the answer list file
+     * @param questionLocationsName     name of the question locations file
+     * @param fileName                  name of output file
+     * @param meters                    range answer is considered close
+     */
     public void generateTrajectoryDistances(String csvName, String questionLocationsName, String fileName, double meters) {
         Scanner csv = null;
         Scanner ql = null;
@@ -85,7 +102,7 @@ public class CsvGrader {
                 }
                 anstj.add(new AnswerTrajectory(Double.parseDouble(line[13]), Double.parseDouble(line[14]), line[12], Double.parseDouble(line[9]), Integer.parseInt(line[0]), Integer.parseInt(line[16])));
             }
-            writer.append("Distance,AnswerType\n");
+            writer.append("Distance,AnswerType,ID,Question\n");
 
             ArrayList<Trajectory> alltj = new ArrayList<Trajectory>();
             for (String s : Ids)        //for each device ID determine the corresponding answer list
@@ -105,7 +122,6 @@ public class CsvGrader {
 
                     int i = 0;
                     int currentQuestion = anstj.get(i).getQuestion();
-                    double currentQuestionTimeStamp = anstj.get(i).getTimeStamp();
                     int currentAnswer = anstj.get(i).getAnswer();
                     int correct = 0;
                     if (currentAnswer == 1 || currentAnswer == 2)
@@ -144,7 +160,7 @@ public class CsvGrader {
                                     answerId = 4;
                             }
 
-                            writer.append(dist + "," + answerId + "\n");
+                            writer.append(dist + "," + answerId +","+t.getId()+","+anstj.get(0).getQuestion()+"\n");
                             BC = false;
                         }
                         else
@@ -155,7 +171,7 @@ public class CsvGrader {
 
                     }
 
-                    for(int a = 1; a < anstj.size(); a++)   //for questions 1-n
+                    for(int a = 0; a < anstj.size(); a++)   //for questions 1-n
                     {
                         //determine the distance and answer type
 
@@ -181,7 +197,13 @@ public class CsvGrader {
                             if (correct == 0)
                                 answerId = 4;
                         }
-                        writer.append(dist + "," + answerId + "\n");
+                        if(anstj.get(a).getQuestion() == 20 )
+                        {
+                            System.out.println("("+qX+","+qY+")");
+                        }
+
+
+                        writer.append(dist + "," + answerId  +","+anstj.get(a).getId()+","+anstj.get(a).getQuestion()+ "\n");
                     }
 
                 }
@@ -319,6 +341,13 @@ public class CsvGrader {
         }
     }*/
 
+    /**
+     * generateTrajectorySpeeds
+     * creates a .csv file of the speeds in the answer list based on time stamps and current locations
+     *
+     * @param csvName       name of the answer list file
+     * @param fileName      name of output file
+     */
     public void generateTrajectorySpeeds(String csvName, String fileName) {
         Scanner csv = null;
         try {
