@@ -1,6 +1,7 @@
 function [ ret ] = deterPcts( data )
-%UNTITLED5 Summary of this function goes here
-%   Detailed explanation goes here
+%uses a nx4 matrix and converts each row to percents
+%   takes in the matrix created by getPcts to create an nx4 matrix of
+%   percents for the area charts.
     a = data(1,1);
     b = data(1,2);
     c = data(1,3);
